@@ -33,56 +33,56 @@ pub mod rtcm_parser {
 
     #[derive(Debug, DekuRead, DekuWrite)]
     #[deku(endian = "big")]
-    pub struct RtcmHeaderGPSRTK {
+    pub struct RtcmHeader {
         #[deku(bits = "12")]
         pub message_number: u16,
 
         #[deku(bits = "12")]
-        reference_station_id: u16,
+        pub reference_station_id: u16,
 
         #[deku(bits = "30")]
-        gps_epoch_time: u32,
+        pub gps_epoch_time: u32,
 
         #[deku(bits = "1")]
-        synchronous_gnss_flag: u8,
+        pub synchronous_gnss_flag: u8,
 
         #[deku(bits = "5")]
-        num_gps_satellite_signals_processed: u8,
+        pub num_gps_satellite_signals_processed: u8,
 
         #[deku(bits = "1")]
-        gps_divergence_free_smoothing_indicator: u8,
+        pub gps_divergence_free_smoothing_indicator: u8,
 
         #[deku(bits = "3")]
-        gps_smoothing_interval: u8,
+        pub gps_smoothing_interval: u8,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     #[deku(endian = "big")]
     pub struct Rtcm1001Satellite {
         #[deku(bits = "6")]
-        gps_satellite_id: u8,
+        pub gps_satellite_id: u8,
 
         #[deku(bits = "1")]
-        gps_l1_code_indicator: u8,
+        pub gps_l1_code_indicator: u8,
 
         #[deku(bits = "24")]
-        gps_l1_pseudorange: u32,
+        pub gps_l1_pseudorange: u32,
 
         #[deku(bits = "20")]
-        gps_l1_phaserange_minus_pseudorange: i32,
+        pub gps_l1_phaserange_minus_pseudorange: i32,
 
         #[deku(bits = "7")]
-        gps_l1_lock_time_indicator: u8,
+        pub gps_l1_lock_time_indicator: u8,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     pub struct Rtcm1001 {
-        pub header: RtcmHeaderGPSRTK,
+        pub header: RtcmHeader,
 
         #[deku(count = "header.num_gps_satellite_signals_processed")]
-        satellites: Vec<Rtcm1001Satellite>,
+        pub satellites: Vec<Rtcm1001Satellite>,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 
@@ -90,35 +90,35 @@ pub mod rtcm_parser {
     #[deku(endian = "big")]
     pub struct Rtcm1002Satellite {
         #[deku(bits = "6")]
-        gps_satellite_id: u8,
+        pub gps_satellite_id: u8,
 
         #[deku(bits = "1")]
-        gps_l1_code_indicator: u8,
+        pub gps_l1_code_indicator: u8,
 
         #[deku(bits = "24")]
-        gps_l1_pseudorange: u32,
+        pub gps_l1_pseudorange: u32,
 
         #[deku(bits = "20")]
-        gps_l1_phaserange_minus_pseudorange: i32,
+        pub gps_l1_phaserange_minus_pseudorange: i32,
 
         #[deku(bits = "7")]
-        gps_l1_lock_time_indicator: u8,
+        pub gps_l1_lock_time_indicator: u8,
 
         #[deku(bits = "8")]
-        gps_integer_l1_pseudorange_modulus_ambiguity: u8,
+        pub gps_integer_l1_pseudorange_modulus_ambiguity: u8,
 
         #[deku(bits = "8")]
-        gps_l1_cnr: u8,
+        pub gps_l1_cnr: u8,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     pub struct Rtcm1002 {
-        pub header: RtcmHeaderGPSRTK,
+        pub header: RtcmHeader,
 
         #[deku(count = "header.num_gps_satellite_signals_processed")]
-        satellites: Vec<Rtcm1002Satellite>,
+        pub satellites: Vec<Rtcm1002Satellite>,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 
@@ -126,41 +126,41 @@ pub mod rtcm_parser {
     #[deku(endian = "big")]
     pub struct Rtcm1003Satellite {
         #[deku(bits = "6")]
-        gps_satellite_id: u8,
+        pub gps_satellite_id: u8,
 
         #[deku(bits = "1")]
-        gps_l1_code_indicator: u8,
+        pub gps_l1_code_indicator: u8,
 
         #[deku(bits = "24")]
-        gps_l1_pseudorange: u32,
+        pub gps_l1_pseudorange: u32,
 
         #[deku(bits = "20")]
-        gps_l1_phaserange_minus_pseudorange: i32,
+        pub gps_l1_phaserange_minus_pseudorange: i32,
 
         #[deku(bits = "7")]
-        gps_l1_lock_time_indicator: u8,
+        pub gps_l1_lock_time_indicator: u8,
 
         #[deku(bits = "2")]
-        gps_l2_code_indicator: u8,
+        pub gps_l2_code_indicator: u8,
 
         #[deku(bits = "14")]
-        gps_l2_l1_pseudorange_difference: i16,
+        pub gps_l2_l1_pseudorange_difference: i16,
 
         #[deku(bits = "20")]
-        gps_l2_phaserange_minus_pseudorange: i32,
+        pub gps_l2_phaserange_minus_pseudorange: i32,
 
         #[deku(bits = "7")]
-        gps_l2_lock_time_indicator: u8,
+        pub gps_l2_lock_time_indicator: u8,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     pub struct Rtcm1003 {
-        pub header: RtcmHeaderGPSRTK,
+        pub header: RtcmHeader,
 
         #[deku(count = "header.num_gps_satellite_signals_processed")]
-        satellites: Vec<Rtcm1003Satellite>,
+        pub satellites: Vec<Rtcm1003Satellite>,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 
@@ -168,50 +168,50 @@ pub mod rtcm_parser {
     #[deku(endian = "big")]
     pub struct Rtcm1004Satellite {
         #[deku(bits = "6")]
-        gps_satellite_id: u8,
+        pub gps_satellite_id: u8,
 
         #[deku(bits = "1")]
-        gps_l1_code_indicator: u8,
+        pub gps_l1_code_indicator: u8,
 
         #[deku(bits = "24")]
-        gps_l1_pseudorange: u32,
+        pub gps_l1_pseudorange: u32,
 
         #[deku(bits = "20")]
-        gps_l1_phaserange_minus_pseudorange: i32,
+        pub gps_l1_phaserange_minus_pseudorange: i32,
 
         #[deku(bits = "7")]
-        gps_l1_lock_time_indicator: u8,
+        pub gps_l1_lock_time_indicator: u8,
 
         #[deku(bits = "8")]
-        gps_integer_l1_pseudorange_modulus_ambiguity: u8,
+        pub gps_integer_l1_pseudorange_modulus_ambiguity: u8,
 
         #[deku(bits = "8")]
-        gps_l1_cnr: u8,
+        pub gps_l1_cnr: u8,
 
         #[deku(bits = "2")]
-        gps_l2_code_indicator: u8,
+        pub gps_l2_code_indicator: u8,
 
         #[deku(bits = "14")]
-        gps_l2_l1_pseudorange_difference: i16,
+        pub gps_l2_l1_pseudorange_difference: i16,
 
         #[deku(bits = "20")]
-        gps_l2_phaserange_minus_pseudorange: i32,
+        pub gps_l2_phaserange_minus_pseudorange: i32,
 
         #[deku(bits = "7")]
-        gps_l2_lock_time_indicator: u8,
+        pub gps_l2_lock_time_indicator: u8,
 
         #[deku(bits = "8")]
-        gps_l2_cnr: u8,
+        pub gps_l2_cnr: u8,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     pub struct Rtcm1004 {
-        pub header: RtcmHeaderGPSRTK,
+        pub header: RtcmHeader,
 
         #[deku(count = "header.num_gps_satellite_signals_processed")]
-        satellites: Vec<Rtcm1004Satellite>,
+        pub satellites: Vec<Rtcm1004Satellite>,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 
@@ -222,42 +222,42 @@ pub mod rtcm_parser {
         pub message_number: u16,
 
         #[deku(bits = "12")]
-        reference_station_id: u16,
+        pub reference_station_id: u16,
 
         #[deku(bits = "6")]
-        reserved_realization_year: u8,
+        pub itrf_realization_year: u8,
 
         #[deku(bits = "1")]
-        gps_indicator: u8,
+        pub gps_indicator: u8,
 
         #[deku(bits = "1")]
-        glonass_indicator: u8,
+        pub glonass_indicator: u8,
 
         #[deku(bits = "1")]
-        galileo_indicator: u8,
+        pub galileo_indicator: u8,
 
         #[deku(bits = "1")]
-        reference_station_indicator: u8,
+        pub reference_station_indicator: u8,
 
         #[deku(bits = "38")]
-        antenna_reference_point_ecef_x: i64,
+        pub antenna_reference_point_ecef_x: i64,
 
         #[deku(bits = "1")]
-        single_receiver_oscillator_indicator: u8,
+        pub single_receiver_oscillator_indicator: u8,
 
         #[deku(bits = "1")]
-        reserved: u8,
+        pub reserved: u8,
 
         #[deku(bits = "38")]
-        antenna_reference_point_ecef_y: i64,
+        pub antenna_reference_point_ecef_y: i64,
 
         #[deku(bits = "2")]
-        quarter_cycle_indicator: u8,
+        pub quarter_cycle_indicator: u8,
 
         #[deku(bits = "38")]
-        antenna_reference_point_ecef_z: i64,
+        pub antenna_reference_point_ecef_z: i64,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 
@@ -268,122 +268,143 @@ pub mod rtcm_parser {
         pub message_number: u16,
 
         #[deku(bits = "12")]
-        reference_station_id: u16,
+        pub reference_station_id: u16,
 
         #[deku(bits = "6")]
-        realization_year: u8,
+        pub realization_year: u8,
 
         #[deku(bits = "1")]
-        gps_indicator: u8,
+        pub gps_indicator: u8,
 
         #[deku(bits = "1")]
-        glonass_indicator: u8,
+        pub glonass_indicator: u8,
 
         #[deku(bits = "1")]
-        reserved_galileo_indicator: u8,
+        pub galileo_indicator: u8,
 
         #[deku(bits = "1")]
-        reference_station_indicator: u8,
+        pub reference_station_indicator: u8,
 
         #[deku(bits = "38")]
-        antenna_reference_point_ecef_x: i64,
+        pub antenna_reference_point_ecef_x: i64,
 
         #[deku(bits = "1")]
-        single_receiver_oscillator_indicator: u8,
+        pub single_receiver_oscillator_indicator: u8,
 
         #[deku(bits = "1")]
-        reserved: u8,
+        pub reserved: u8,
 
         #[deku(bits = "38")]
-        antenna_reference_point_ecef_y: i64,
+        pub antenna_reference_point_ecef_y: i64,
 
         #[deku(bits = "2")]
-        quarter_cycle_indicator: u8,
+        pub quarter_cycle_indicator: u8,
 
         #[deku(bits = "38")]
-        antenna_reference_point_ecef_z: i64,
+        pub antenna_reference_point_ecef_z: i64,
 
         #[deku(bits = "16")]
-        antenna_height: u16,
+        pub antenna_height: u16,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     #[deku(endian = "big")]
-    pub struct SatelliteData {
+    pub struct RtcmMSM7Satellite {
         #[deku(bits = "8")]
-        rough_range: u8,
+        pub rough_range: u8,
+
         #[deku(bits = "4")]
-        ext_sat_info: u8,
+        pub extented_satallite_info: u8,
+
         #[deku(bits = "10")]
-        rough_range_milli: u16,
+        pub rough_ranges_modulo: u16,
+
         #[deku(bits = "14")]
-        rough_phase: u16,
+        pub rough_phase_range_rates: u16,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     #[deku(endian = "big")]
-    pub struct SignalData {
+    pub struct RtcmMSM7Signal {
         #[deku(bits = "20")]
-        pseudorange: i32,
+        pub fine_pseudorange: i32,
+
         #[deku(bits = "24")]
-        phaserange: i32,
+        pub fine_phase_range: i32,
+
         #[deku(bits = "10")]
-        phaserange_lock: u16,
+        pub phaserange_lock_indicator: u16,
+
         #[deku(bits = "1")]
-        halfcycle_ambiguity: bool,
+        pub halfcycle_ambiguity_indicator: bool,
+
         #[deku(bits = "10")]
-        cnr: u16,
+        pub cnr: u16,
+
         #[deku(bits = "15")]
-        phaserange_rate: i16,
+        pub fine_phase_range_rate: i16,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     #[deku(endian = "big")]
     pub struct MsmHeader {
         #[deku(bits = "12")]
-        pub msg_id: u16,
+        pub message_number: u16,
+
         #[deku(bits = "12")]
-        station_id: u16,
+        pub reference_station_id: u16,
+
         #[deku(bits = "30")]
-        epoch: u32,
+        pub gnss_epoch_time: u32,
+
         #[deku(bits = "1")]
-        multiple_msg: bool,
+        pub multiple_message_bit: u8,
+
         #[deku(bits = "3")]
-        iods: u8,
+        pub iods_issue_of_data_station: u8,
+
         #[deku(bits = "7")]
-        reserved: u8,
+        pub reserved: u8,
+
         #[deku(bits = "2")]
-        clock_steering: u8,
+        pub clock_steering_indicator: u8,
+
         #[deku(bits = "2")]
-        external_clock_indicator: u8,
+        pub external_clock_indicator: u8,
+
         #[deku(bits = "1")]
-        smoothing_indicator: bool,
+        pub gnss_divergence_free_smoothing_indicator: u8,
+
         #[deku(bits = "3")]
-        smoothing_interval: u8,
+        pub gnss_smoothing_interval: u8,
+
         #[deku(bits = "64")]
-        satellite_mask: u64,
+        pub gnss_satellite_mask: u64,
+
         #[deku(bits = "32")]
-        signal_mask: u32,
+        pub gnss_signal_mask: u32,
+
         #[deku(
             bits = 1,
-            bits_read = "satellite_mask.count_ones() * signal_mask.count_ones()"
+            bits_read = "gnss_satellite_mask.count_ones() * gnss_signal_mask.count_ones()"
         )]
-        cell_mask: Vec<bool>,
+        pub cell_mask: Vec<bool>,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
     pub struct RtcmMSM7 {
         pub header: MsmHeader,
 
-        #[deku(count = "header.satellite_mask.count_ones()")]
-        satellites: Vec<SatelliteData>,
-        #[deku(count = "header.cell_mask.iter().filter(|&n| *n).count()")]
-        signals: Vec<SignalData>,
+        #[deku(count = "header.gnss_satellite_mask.count_ones()")]
+        pub satellites: Vec<RtcmMSM7Satellite>,
 
-        #[deku(bits = "1", count = "deku::rest.len()")]
+        #[deku(count = "header.cell_mask.iter().filter(|&n| *n).count()")]
+        pub signals: Vec<RtcmMSM7Signal>,
+
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
     }
 }
