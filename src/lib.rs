@@ -1,8 +1,89 @@
-pub use crate::rtcm_parser::Rtcm;
-
 pub mod rtcm_parser {
     use deku::prelude::*;
 
+    const RTCM_MAGIC: u8 = 0b11010011;
+    const RTCM_PREAMBLE_SIZE: usize = 3;
+    const RTCM_CHECKSUM_SIZE: usize = 3;
+
+    // RtcmParser
+    pub struct RtcmParser {
+        buffer: Vec<u8>,
+        max_size: usize,
+        crc24: crc_any::CRC,
+    }
+
+    impl RtcmParser {
+        pub fn new() -> Self {
+            RtcmParser {
+                buffer: vec![],
+                max_size: 10000,
+                crc24: crc_any::CRC::create_crc(0b1100001100100110011111011, 24, 0, 0, false),
+            }
+        }
+
+        fn get_message_length(bytes: &[u8]) -> usize {
+            let rtcm_length = u16::from_be_bytes([bytes[0], bytes[1]]) & 0x3FFu16;
+            rtcm_length as usize
+        }
+
+        pub fn parse(&mut self, input: &[u8]) -> Vec<Vec<u8>> {
+            // Update buffer
+            self.buffer.extend_from_slice(input);
+
+            // Initialize result
+            let mut result: Vec<Vec<u8>> = Vec::new();
+
+            // Scan for RTCM preamble
+            let mut draining_point = 0;
+            for i in 0..=self.buffer.len() - RTCM_PREAMBLE_SIZE - RTCM_CHECKSUM_SIZE {
+                if self.buffer[i] != RTCM_MAGIC {
+                    continue;
+                }
+
+                let rtcm_length = Self::get_message_length(&self.buffer[i + 1..i + 3]);
+
+                // Read message length (stored in 10 bits)
+                if i + 6 + rtcm_length >= self.buffer.len() {
+                    continue; // This might not be a real message so the rest of the buffer still need to be checked
+                }
+
+                let message_candidate =
+                    &self.buffer[i..i + RTCM_PREAMBLE_SIZE + rtcm_length + RTCM_CHECKSUM_SIZE];
+
+                // Compute the checksum using crc24q
+                self.crc24.reset();
+                self.crc24
+                    .digest(&message_candidate[..RTCM_PREAMBLE_SIZE + rtcm_length]);
+                let checksum_computed = self.crc24.get_crc();
+                // Extract the checksum from the message
+                let checksum_message =
+                    ((message_candidate[RTCM_PREAMBLE_SIZE + rtcm_length] as u64) << 16)
+                        | ((message_candidate[RTCM_PREAMBLE_SIZE + rtcm_length + 1] as u64) << 8)
+                        | (message_candidate[RTCM_PREAMBLE_SIZE + rtcm_length + 2] as u64);
+
+                if checksum_computed != checksum_message {
+                    continue; // Bad checksum
+                }
+
+                result.push(
+                    self.buffer[i..i + RTCM_PREAMBLE_SIZE + rtcm_length + RTCM_CHECKSUM_SIZE]
+                        .to_vec(),
+                );
+                draining_point = i + RTCM_PREAMBLE_SIZE + rtcm_length + RTCM_CHECKSUM_SIZE;
+            }
+
+            // Update the draining point to satisfy the max_size
+            if self.buffer.len() - draining_point > self.max_size {
+                draining_point = self.buffer.len() - self.max_size;
+            }
+
+            self.buffer.drain(..draining_point);
+
+            result
+        }
+    }
+
+    // RTCM Data structures
     pub enum Rtcm {
         Rtcm1001(Rtcm1001),
         Rtcm1002(Rtcm1002),
