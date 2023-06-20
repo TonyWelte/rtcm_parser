@@ -84,6 +84,7 @@ pub mod rtcm_parser {
     }
 
     // RTCM Data structures
+    #[derive(Debug)]
     pub enum Rtcm {
         Rtcm1001(Rtcm1001),
         Rtcm1002(Rtcm1002),
