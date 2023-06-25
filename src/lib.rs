@@ -1,6 +1,9 @@
 pub mod rtcm_parser {
     use deku::prelude::*;
 
+    use itertools::izip;
+    use std::fmt;
+
     const RTCM_MAGIC: u8 = 0b11010011;
     const RTCM_PREAMBLE_SIZE: usize = 3;
     const RTCM_CHECKSUM_SIZE: usize = 3;
@@ -405,7 +408,7 @@ pub mod rtcm_parser {
         pub rough_ranges_modulo: u16,
 
         #[deku(bits = "14")]
-        pub rough_phase_range_rates: u16,
+        pub rough_phase_range_rates: i16,
     }
 
     #[derive(Debug, DekuRead, DekuWrite)]
@@ -488,5 +491,57 @@ pub mod rtcm_parser {
 
         #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
+    }
+
+    fn pseudorange(sat: &RtcmMSM7Satellite, sig: &RtcmMSM7Signal) -> f64 {
+        let c = 299_792_458.0;
+        c / 1000.0
+            * (sat.rough_ranges_modulo as f64
+                + sat.rough_range as f64 / 1024.0
+                + 2e-29 * sig.fine_pseudorange as f64)
+    }
+
+    fn phaserange(sat: &RtcmMSM7Satellite, sig: &RtcmMSM7Signal) -> f64 {
+        let c = 299_792_458.0;
+        c / 1000.0
+            * (sat.rough_ranges_modulo as f64
+                + sat.rough_range as f64 / 1024.0
+                + 2e-31 * sig.fine_phase_range as f64)
+    }
+
+    fn phaserangerate(sat: &RtcmMSM7Satellite, sig: &RtcmMSM7Signal) -> f64 {
+        sat.rough_phase_range_rates as f64 + 0.0001 * sig.fine_phase_range_rate as f64
+    }
+
+    impl fmt::Display for RtcmMSM7 {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            // Get number of signals
+            let sat_id: Vec<usize> = (1..=64)
+                .filter(|id| ((1u64 << (64 - id)) & self.header.gnss_satellite_mask) != 0)
+                .collect();
+
+            let n_sig = self.header.gnss_signal_mask.count_ones() as usize;
+            let n_sig_per_sat: Vec<usize> = self
+                .header
+                .cell_mask
+                .chunks(n_sig)
+                .map(|sig_for_sat| sig_for_sat.iter().filter(|&mask| *mask).count())
+                .collect();
+
+            // Create iteror (repeate satellite for each signal)
+            let iter_sat: Vec<&RtcmMSM7Satellite> = std::iter::zip(&self.satellites, n_sig_per_sat)
+                .flat_map(|(sat, count)| std::iter::repeat(sat).take(count))
+                .collect();
+
+            for (id, sat, sig) in izip!(1..64, iter_sat, self.signals.iter()) {
+                let range = pseudorange(sat, sig);
+                let phase_range = phaserange(sat, sig);
+                let phase_range_rate = phaserangerate(sat, sig);
+                let cnr: f64 = (2.0 as f64).powi(-4) * sig.cnr as f64;
+                writeln!(f, "{id} Pseudorange: {range}, PhaseRange: {phase_range}, PhaseRangeRate: {phase_range_rate}, CNR: {cnr}dBHz")?;
+            }
+
+            Ok(())
+        }
     }
 }
