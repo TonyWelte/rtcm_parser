@@ -95,6 +95,7 @@ pub mod rtcm_parser {
         Rtcm1004(Rtcm1004),
         Rtcm1005(Rtcm1005),
         Rtcm1006(Rtcm1006),
+        Rtcm1019(Rtcm1019),
         RtcmMSM7(RtcmMSM7),
         UnsupportedType(u16),
     }
@@ -110,6 +111,7 @@ pub mod rtcm_parser {
                 1004 => Rtcm1004::try_from(data).map(|rtcm| Rtcm::Rtcm1004(rtcm)),
                 1005 => Rtcm1005::try_from(data).map(|rtcm| Rtcm::Rtcm1005(rtcm)),
                 1006 => Rtcm1006::try_from(data).map(|rtcm| Rtcm::Rtcm1006(rtcm)),
+                1019 => Rtcm1019::try_from(data).map(|rtcm| Rtcm::Rtcm1019(rtcm)),
                 1077 | 1087 | 1097 => RtcmMSM7::try_from(data).map(|rtcm| Rtcm::RtcmMSM7(rtcm)),
                 any => Ok(Rtcm::UnsupportedType(any)),
             }
@@ -390,6 +392,106 @@ pub mod rtcm_parser {
 
         #[deku(bits = "16")]
         pub antenna_height: u16,
+
+        #[deku(bits = "1", count = "deku::rest.len() % 8")]
+        pub padding: Vec<bool>,
+    }
+
+    #[derive(Debug, DekuRead, DekuWrite)]
+    #[deku(endian = "big")]
+    pub struct Rtcm1019 {
+        #[deku(bits = "12")]
+        pub message_number: u16,
+
+        #[deku(bits = "6")]
+        pub satellite_id: u8,
+
+        #[deku(bits = "10")]
+        pub week_number: u16,
+
+        #[deku(bits = "4")]
+        pub sv_accuracy: u8,
+
+        #[deku(bits = "2")]
+        pub code_on_l2: u8,
+
+        #[deku(bits = "14")]
+        pub idot: i16,
+
+        #[deku(bits = "8")]
+        pub iode: u8,
+
+        #[deku(bits = "16")]
+        pub t_oc: u16,
+
+        #[deku(bits = "8")]
+        pub a_f2: i8,
+
+        #[deku(bits = "16")]
+        pub a_f1: i16,
+
+        #[deku(bits = "22")]
+        pub a_f0: i32,
+
+        #[deku(bits = "10")]
+        pub iocd: u16,
+
+        #[deku(bits = "16")]
+        pub c_rs: i16,
+
+        #[deku(bits = "16")]
+        pub delta_n: i16,
+
+        #[deku(bits = "32")]
+        pub m0: i32,
+
+        #[deku(bits = "16")]
+        pub c_uc: i16,
+
+        #[deku(bits = "32")]
+        pub eccentricity: u32,
+
+        #[deku(bits = "16")]
+        pub c_us: i16,
+
+        #[deku(bits = "32")]
+        pub a_sqrt: u32,
+
+        #[deku(bits = "16")]
+        pub t_oe: u16,
+
+        #[deku(bits = "16")]
+        pub c_ic: i16,
+
+        #[deku(bits = "32")]
+        pub omega0: i32,
+
+        #[deku(bits = "16")]
+        pub c_is: i16,
+
+        #[deku(bits = "32")]
+        pub i0: i32,
+
+        #[deku(bits = "16")]
+        pub c_rc: i16,
+
+        #[deku(bits = "32")]
+        pub omega: i32, // Argument of Perigee
+
+        #[deku(bits = "24")]
+        pub odmegadot: i32, // Rate of acension
+
+        #[deku(bits = "8")]
+        pub t_gd: i8,
+
+        #[deku(bits = "6")]
+        pub sv_health: u8,
+
+        #[deku(bits = "1")]
+        pub l2_p_data_flag: bool,
+
+        #[deku(bits = "1")]
+        pub fit_interval: bool,
 
         #[deku(bits = "1", count = "deku::rest.len() % 8")]
         pub padding: Vec<bool>,
